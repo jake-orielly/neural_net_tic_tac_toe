@@ -63,13 +63,33 @@ output_layer = [[random.random() for _ in range(num_hidden + 1)]
 # network starts with random weights
 network = [hidden_layer, output_layer]
 
-data = generate_winnable_boards(400)
+#data = generate_winnable_boards(400)
 
-inputs = [i[0] for i in data]
-targets = [[0]*9 for i in data]
+#inputs = [i[0] for i in data]
+#targets = [[0]*9 for i in data]
+inputs = []
+targets = []
 
-for i in range(len(targets)):
-    targets[i][data[i][1]] = 1
+for i in range(200):
+    new_board = []
+    for j in range(3):
+        new_board.append([1]*3)
+    new_num = random.randint(0,8)
+    y = int(new_num/3)
+    x = new_num%3
+    new_board[y][x] = 0
+    flat_board = []
+    for i in new_board:
+        for j in i:
+            flat_board.append(j)
+    inputs.append(flat_board)
+    new_target = [0]*9
+    new_target[new_num] = 1
+    targets.append(new_target)
+
+
+#for i in range(len(targets)):
+#    targets[i][data[i][1]] = 1
 
 def predict(input):
     output = feed_forward(network, input)[-1]
@@ -78,23 +98,23 @@ def predict(input):
     print(output[6:9])
     return output.index(max(output))
 
-for _ in range(10000):
+for _ in range(3000):
     for input_vector, target_vector in zip(inputs, targets):
         backpropagate(network, input_vector, target_vector)
     if _ % 100 == 0:
         print(_)
 
 # Should give 7
-print(predict([1, 1, 0, 
-               -1, 1, -1, 
-                0, 0, -1]))
+print(predict([1, 1, 1, 
+               1, 1, 1, 
+                1, 0, 1]))
 
 # Should give 6
-print(predict([1, -1, 1, 
-                -1, 1, 1, 
-                0, -1, -1]))
+print(predict([1, 1, 1, 
+                1, 1, 1, 
+                0, 1, 1]))
 
 # Should give 4
-print(predict([-1, 1, -1, 
-                -1, 0, 1, 
-                0, 1, 1]))
+print(predict([1, 1, 1, 
+                1, 0, 1, 
+                1, 1, 1]))
