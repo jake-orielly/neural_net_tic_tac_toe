@@ -1,6 +1,8 @@
 import math
 import random
 
+from data import generate_winnable_boards
+
 def dot(v, w):
     return sum(v_i * w_i for v_i, w_i in zip(v, w))
 
@@ -46,11 +48,9 @@ def backpropagate(network, input_vector, targets):
         for j, input in enumerate(input_vector + [1]):
             hidden_neuron[j] -= hidden_deltas[i] * input
 
-
-random.seed(0)
-input_size = 25
-num_hidden = 5
-output_size = 10
+input_size = 9
+num_hidden = 9
+output_size = 9
 
 # each hidden neuron has one weight per input, plus a bias weight
 hidden_layer = [[random.random() for _ in range(input_size + 1)]
@@ -63,82 +63,38 @@ output_layer = [[random.random() for _ in range(num_hidden + 1)]
 # network starts with random weights
 network = [hidden_layer, output_layer]
 
-targets = [[1 if i == j else 0 for i in range(10)] for j in range(10)]
-raw_digits = [
-          """11111
-             1...1
-             1...1
-             1...1
-             11111""",
+data = generate_winnable_boards(400)
 
-          """..1..
-             ..1..
-             ..1..
-             ..1..
-             ..1..""",
+inputs = [i[0] for i in data]
+targets = [[0]*9 for i in data]
 
-          """11111
-             ....1
-             11111
-             1....
-             11111""",
-
-          """11111
-             ....1
-             11111
-             ....1
-             11111""",
-
-          """1...1
-             1...1
-             11111
-             ....1
-             ....1""",
-
-          """11111
-             1....
-             11111
-             ....1
-             11111""",
-
-          """11111
-             1....
-             11111
-             1...1
-             11111""",
-
-          """11111
-             ....1
-             ....1
-             ....1
-             ....1""",
-
-          """11111
-             1...1
-             11111
-             1...1
-             11111""",
-
-          """11111
-             1...1
-             11111
-             ....1
-             11111"""]
-
-def make_digit(raw_digit):
-    return [1 if c == '1' else 0
-            for row in raw_digit.split("\n")
-            for c in row.strip()]
-
-inputs = list(map(make_digit, raw_digits))
+for i in range(len(targets)):
+    targets[i][data[i][1]] = 1
 
 def predict(input):
     output = feed_forward(network, input)[-1]
+    print(output[0:3])
+    print(output[3:6])
+    print(output[6:9])
     return output.index(max(output))
 
-# 10k iterations
 for _ in range(10000):
     for input_vector, target_vector in zip(inputs, targets):
         backpropagate(network, input_vector, target_vector)
+    if _ % 100 == 0:
+        print(_)
 
-print(predict(inputs[7]))
+# Should give 7
+print(predict([1, 1, 0, 
+               -1, 1, -1, 
+                0, 0, -1]))
+
+# Should give 6
+print(predict([1, -1, 1, 
+                -1, 1, 1, 
+                0, -1, -1]))
+
+# Should give 4
+print(predict([-1, 1, -1, 
+                -1, 0, 1, 
+                0, 1, 1]))
