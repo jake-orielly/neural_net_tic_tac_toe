@@ -1,5 +1,8 @@
+from __future__ import division
+
 import math
 import random
+import sys
 
 from data import generate_winnable_boards
 
@@ -70,51 +73,41 @@ network = [hidden_layer, output_layer]
 inputs = []
 targets = []
 
-for i in range(200):
-    new_board = []
-    for j in range(3):
-        new_board.append([1]*3)
-    new_num = random.randint(0,8)
-    y = int(new_num/3)
-    x = new_num%3
-    new_board[y][x] = 0
-    flat_board = []
-    for i in new_board:
-        for j in i:
-            flat_board.append(j)
-    inputs.append(flat_board)
-    new_target = [0]*9
-    new_target[new_num] = 1
-    targets.append(new_target)
-
-
 #for i in range(len(targets)):
 #    targets[i][data[i][1]] = 1
 
 def predict(input):
     output = feed_forward(network, input)[-1]
-    print(output[0:3])
-    print(output[3:6])
-    print(output[6:9])
     return output.index(max(output))
 
-for _ in range(3000):
+examples = 250
+iterations = 1000
+
+for i in range(examples):
+    new_board = []
+    for j in range(9):
+        new_board.append(random.choice([-1,1]))
+    new_num = random.randint(0,8)
+    new_board[new_num] = 0
+    inputs.append(new_board)
+    new_target = [0]*9
+    new_target[new_num] = 1
+    targets.append(new_target)
+
+for _ in range(iterations):
     for input_vector, target_vector in zip(inputs, targets):
         backpropagate(network, input_vector, target_vector)
-    if _ % 100 == 0:
-        print(_)
+    if (_ % 20 == 0):
+        print(str(int(_/iterations*100)) + '%')
 
-# Should give 7
-print(predict([1, 1, 1, 
-               1, 1, 1, 
-                1, 0, 1]))
-
-# Should give 6
-print(predict([1, 1, 1, 
-                1, 1, 1, 
-                0, 1, 1]))
-
-# Should give 4
-print(predict([1, 1, 1, 
-                1, 0, 1, 
-                1, 1, 1]))
+total_correct = 0
+for i in range(100000):
+    new_board = []
+    for j in range(9):
+        new_board.append(random.choice([-1,1]))
+    new_num = random.randint(0,8)
+    new_board[new_num] = 0
+    prediction = predict(new_board)
+    if prediction == new_num:
+        total_correct += 1
+print(total_correct/100000)
